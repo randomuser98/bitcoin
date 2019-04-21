@@ -1,0 +1,186 @@
+ private void radio_checking_CheckedChanged(object sender, EventArgs e)
+        {
+            if(radio_checking.Checked)
+            {
+                enableChecking();
+            }
+        }
+
+        private void radio_usd_CheckedChanged(object sender, EventArgs e)
+        {
+            if(radio_usd.Checked)
+            {
+                enableUSD();
+            }
+        }
+        
+        private void button_createAccount_Click(object sender, EventArgs e)
+        {
+            int accountNumber;
+            double balance;
+            double witdrawLimit;
+            double interestRate;
+
+            string name = txt_clientName.Text.Trim();
+
+            //try catch operations on data
+            try { accountNumber = Convert.ToInt32(txt_accountNumber.Text); }
+            catch
+            {
+                MessageBox.Show("Invalid account number, please check again.", 
+                                "Invalid input",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+                return;
+            }
+
+            try { balance = Convert.ToInt32(txt_Balance.Text); }
+            catch
+            {
+                MessageBox.Show("Invalid balance, please check again.",
+                                "Invalid input",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+                return;
+            }
+
+            if (name.Length < 1 )
+            {
+                MessageBox.Show("Invalid name, please check again.",
+                                "Invalid input",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+                return;
+            }
+
+            if(radio_checking.Checked)
+            {
+                try { witdrawLimit = Convert.ToInt32(txt_dailyWithdrawLimit.Text); }
+                catch
+                {
+                    MessageBox.Show("Invalid Daily Withdraw Limit, please check again.",
+                                    "Invalid input",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Error);
+                    return;
+                }
+
+                //here every input is correct
+                accounts.Add(accountNumber, new CheckingAccount(accountNumber, name, balance, witdrawLimit));
+
+            } else
+            {
+                try { interestRate = Convert.ToInt32(txt_interestRate.Text); }
+                catch
+                {
+                    MessageBox.Show("Invalid Interest Rate, please check again.",
+                                    "Invalid input",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Error);
+                    return;
+                }
+
+                //here every input is correct
+                accounts.Add(accountNumber, new UsDollarAccount(accountNumber, name, balance, interestRate));
+            }
+
+            MessageBox.Show("Account Created succesfully.\nTotal accounts in list: " + accounts.Count,
+                                "Success",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Information);
+            
+            ClearInputs();
+        }
+
+        private void button_searchAccount_Click(object sender, EventArgs e)
+        {
+            if(accounts.Count == 0)
+            {
+                MessageBox.Show("There are 0 account in your list, \nplease add some and retry!",
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+                return;
+            }
+
+            int accountNumber;
+
+            //try catch operations on data
+            try { accountNumber = Convert.ToInt32(txt_accountNumberSearch.Text); }
+            catch
+            {
+                MessageBox.Show("Invalid account number, please check again.",
+                                "Invalid input",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+                return;
+            }
+
+            bool flag = false;
+
+            foreach (KeyValuePair<int, Account> entry in accounts)
+            {
+                if(entry.Key == accountNumber)
+                {
+                    flag = true;
+                    string toPrint = "Name: " + entry.Value.ClientName + "\nBalance: " + entry.Value.Balance;
+
+                    if(entry.Value is CheckingAccount)
+                    {
+                        toPrint += "\nDaily Withraw amount: " + ((CheckingAccount)entry.Value).WithdrawLimit;
+                        toPrint += "\nAccount type: Checking";
+                    } else
+                    {
+                        toPrint += "\nInterest rate: " + ((UsDollarAccount)entry.Value).InterestRate;
+                        toPrint += "\nAccount type: UsDollar";
+                    }
+
+                    txtArea_accountDetails.Text = toPrint;
+                }
+            }
+
+            if(!flag)
+            {
+                MessageBox.Show("No account found corrisponding to this number",
+                                "Not Found",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
+            }
+
+        }
+
+        void ClearInputs()
+        {
+            txt_accountNumber.Text = "";
+            txt_Balance.Text = "";
+            txt_clientName.Text = "";
+            txt_dailyWithdrawLimit.Text = "";
+            txt_interestRate.Text = "";
+
+            enableChecking();
+        }
+
+        void enableChecking()
+        {
+            radio_checking.Checked = true;
+
+            lblLimit.Enabled = true;
+            lblRate.Enabled = false;
+
+            txt_dailyWithdrawLimit.Enabled = true;
+            txt_interestRate.Enabled = false;
+        }
+
+        void enableUSD()
+        {
+            radio_usd.Checked = true;
+
+            lblLimit.Enabled = false;
+            lblRate.Enabled = true;
+
+            txt_dailyWithdrawLimit.Enabled = false;
+            txt_interestRate.Enabled = true;
+        }
+
+    }
+}
